@@ -29,67 +29,67 @@ import (
 var topic = "micro-master"
 
 type NATSUpdateEHeader struct {
-	Mode 		string	`json:"mode"`
-	Entity 		string	`json:"entity"`
-	EntityPath	string	`json:"entity_path"`
-	ServerID	string	`json:"serverID,omitempty"`
+	Mode       string `json:"mode"`
+	Entity     string `json:"entity"`
+	EntityPath string `json:"entity_path"`
+	ServerID   string `json:"serverID,omitempty"`
 }
 
 type NATSEntityUpdate struct {
-	Header 		NATSUpdateEHeader `json:"header"`
-	Buffer		[]byte			`json:"buffer"`
+	Header NATSUpdateEHeader `json:"header"`
+	Buffer []byte            `json:"buffer"`
 }
 
 type NATSUpdateDHeader struct {
-	Created     bool   	`json:"created,omitempty"`
-	Timestamp   int64   `json:"timestamp,omitempty"`
-	Path       	string  `json:"path,omitempty"`
-	Doc        	string  `json:"docId,omitempty"`
-	DocVersion 	string  `json:"docVersion,omitempty"`
-	Expiry		int64	`json:"expiry"`
-	ServerID	string	`json:"serverID,omitempty"`
-	Entity		string	`json:"entity"`
-	EntityPath	string	`json:"entityPath,omitempty"`
-	DocPath		string	`json:"docPath,omitempty"`
-	TArray  	[]string `json:"tarray,omitempty"`
-	EntityAccess string	`json:"entityAccess"`
-	RDID		string	`json:"rdid,omitempty"`
+	Created      bool     `json:"created,omitempty"`
+	Timestamp    int64    `json:"timestamp,omitempty"`
+	Path         string   `json:"path,omitempty"`
+	Doc          string   `json:"docId,omitempty"`
+	DocVersion   string   `json:"docVersion,omitempty"`
+	Expiry       int64    `json:"expiry"`
+	ServerID     string   `json:"serverID,omitempty"`
+	Entity       string   `json:"entity"`
+	EntityPath   string   `json:"entityPath,omitempty"`
+	DocPath      string   `json:"docPath,omitempty"`
+	TArray       []string `json:"tarray,omitempty"`
+	EntityAccess string   `json:"entityAccess"`
+	RDID         string   `json:"rdid,omitempty"`
 }
 
 type NATSDataUpdate struct {
-	Header 		NATSUpdateDHeader `json:"header"`
-	Buffer		[]byte			`json:"buffer"`
+	Header NATSUpdateDHeader `json:"header"`
+	Buffer []byte            `json:"buffer"`
 }
 
 type NATSResponseHeader struct {
-	Created     bool   	`json:"created,omitempty"`
-	Timestamp   int64   `json:"timestamp,omitempty"`
-	Path       string   `json:"path,omitempty"`
-	Doc        string   `json:"docId,omitempty"`
-	DocVersion string   `json:"docVersion,omitempty"`
-	Status		int		`json:"status"`
-	ErrorStr	string	`json:"error_str,omitempty"`
-	ServerID	string 	`json:"serverID,omitempty"`
-	Chunks		int		`json:"chunks,omitempty"`
-	EncryptedHdr	[]byte	`json:"encrypted_hdr,omitempty"`
+	Created      bool   `json:"created,omitempty"`
+	Timestamp    int64  `json:"timestamp,omitempty"`
+	Path         string `json:"path,omitempty"`
+	Doc          string `json:"docId,omitempty"`
+	DocVersion   string `json:"docVersion,omitempty"`
+	Status       int    `json:"status"`
+	ErrorStr     string `json:"error_str,omitempty"`
+	ServerID     string `json:"serverID,omitempty"`
+	Chunks       int    `json:"chunks,omitempty"`
+	EncryptedHdr []byte `json:"encrypted_hdr,omitempty"`
 }
 
 type NATSReqHeader struct {
-	Mode 		string		`json:"mode"`
-	Path		string		`json:"path"`
-	Flags 		map[string]interface{}	`json:"flags"`
-	Authorization 	string	`json:"authorization"`
-	Accept		string		`json:"accept"`
+	Mode          string                 `json:"mode"`
+	Path          string                 `json:"path"`
+	Flags         map[string]interface{} `json:"flags"`
+	Authorization string                 `json:"authorization"`
+	Accept        string                 `json:"accept"`
 }
 
 type NATSRequest struct {
-	Header		NATSReqHeader `json:"header"`
-	Body		[]byte	`json:"body"`
+	Header NATSReqHeader `json:"header"`
+	Body   []byte        `json:"body"`
 }
 
 type NATSResponse struct {
-	Header 		NATSResponseHeader 	`json:"header"`
-	Response	string				`json:"response"`
+	Header   NATSResponseHeader `json:"header"`
+	Response string             `json:"response"`
 }
 
 func setupConnOptions(opts []nats.Option) []nats.Option {
@@ -119,7 +119,7 @@ func processReq(msg *nats.Msg, conn *nats.Conn) {
 
 	req := &NATSRequest{}
 	_ = json.Unmarshal(msg.Data, &req)
-	fmt.Printf("req %v\n",req)
+	fmt.Printf("req %v\n", req)
 	/*start := time.Now()
 	handler := GetRoute(nr, req.Header)
 	if handler != nil {
@@ -144,14 +144,14 @@ func processReq(msg *nats.Msg, conn *nats.Conn) {
 			_ = msg.Respond(response)
 		}
 
-	 */
-		resp := &NATSResponse{}
-		resp.Response = "master micro response"
-		response, err := json.Marshal(resp)
-		if err != nil {
-			fmt.Printf("json marshall err %v\n", err)
-		}
-		_ = msg.Respond(response)
+	*/
+	resp := &NATSResponse{}
+	resp.Response = "master micro response"
+	response, err := json.Marshal(resp)
+	if err != nil {
+		fmt.Printf("json marshall err %v\n", err)
+	}
+	_ = msg.Respond(response)
 	//} else {
 	//	_ = msg.Respond([]byte("method not found"))
 	//}
@@ -172,21 +172,21 @@ func connectNATS() {
 	i := 0
 	sc, err := nc.QueueSubscribeSync(topic, "disp-micro")
 	if err != nil {
-		fmt.Printf("Oh shit %v\n",err)
+		fmt.Printf("Oh shit %v\n", err)
 	}
 
-	msg,err := sc.NextMsg(2 * time.Hour)
+	msg, err := sc.NextMsg(2 * time.Hour)
 	if err != nil {
-		fmt.Printf("sub err %v\n",err)
+		fmt.Printf("sub err %v\n", err)
 	} else {
 		i++
-		processReq(msg,nc)
+		processReq(msg, nc)
 	}
 
 }
 
 func main() {
-	log.Printf("Dataparency\u2122 dpmicroserver started on topic %v\n",topic)
+	log.Printf("Dataparency\u2122 dpmicroserver started on topic %v\n", topic)
 	for {
 		connectNATS()
 	}

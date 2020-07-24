@@ -26,32 +26,32 @@ import (
 )
 
 type NATSResponseHeader struct {
-	Created     bool   	`json:"created,omitempty"`
-	Timestamp   int64   `json:"timestamp,omitempty"`
-	Path       string   `json:"path,omitempty"`
-	Doc        string   `json:"docId,omitempty"`
-	DocVersion string   `json:"docVersion,omitempty"`
-	Status		int		`json:"status"`
-	ErrorStr	string	`json:"error_str,omitempty"`
-	ServerID	string 	`json:"serverID,omitempty"`
-	EncryptedHdr	[]byte	`json:"encrypted_hdr,omitempty"`
+	Created      bool   `json:"created,omitempty"`
+	Timestamp    int64  `json:"timestamp,omitempty"`
+	Path         string `json:"path,omitempty"`
+	Doc          string `json:"docId,omitempty"`
+	DocVersion   string `json:"docVersion,omitempty"`
+	Status       int    `json:"status"`
+	ErrorStr     string `json:"error_str,omitempty"`
+	ServerID     string `json:"serverID,omitempty"`
+	EncryptedHdr []byte `json:"encrypted_hdr,omitempty"`
 }
 
 type NATSReqHeader struct {
-	Mode 		string		`json:"mode"`
-	Path		string		`json:"path"`
-	Flags 		map[string]interface{}	`json:"flags"`
-	Authorization 	string	`json:"authorization"`
+	Mode          string                 `json:"mode"`
+	Path          string                 `json:"path"`
+	Flags         map[string]interface{} `json:"flags"`
+	Authorization string                 `json:"authorization"`
 }
 
 type NATSRequest struct {
-	Header		NATSReqHeader `json:"header"`
-	Body		[]byte	`json:"body"`
+	Header NATSReqHeader `json:"header"`
+	Body   []byte        `json:"body"`
 }
 
 type NATSResponse struct {
-	Header 		NATSResponseHeader `json:"header"`
-	Response	string			`json:"response"`
+	Header   NATSResponseHeader `json:"header"`
+	Response string             `json:"response"`
 }
 
 // NOTE: Can test with demo servers.
@@ -128,64 +128,63 @@ func main() {
 	}
 
 	type Token struct {
-		Token	string	`json:"token"`
+		Token string `json:"token"`
 	}
-	
+
 	tk := &Token{}
-	
+
 	tbodyS := &User{}
 	tbodyS.Username = *requestor
 	tbodyS.Password = *passCode
 	tbodyS.Expires = 999999999999
 	tbody, err := json.Marshal(tbodyS)
-	
+
 	thdr := NATSReqHeader{
 		Mode: "POST",
 		Path: "/api/login",
-		}
-	trec := &NATSRequest {
+	}
+	trec := &NATSRequest{
 		Header: thdr,
-		Body: tbody,
+		Body:   tbody,
 	}
 	payload, err := json.Marshal(trec)
 	msg, err := nc.Request(subj, payload, 2*time.Second)
 	if err == nil {
 		var response = &NATSResponse{}
-		err = json.Unmarshal(msg.Data,response)
-		err = json.Unmarshal([]byte(response.Response),tk)
+		err = json.Unmarshal(msg.Data, response)
+		err = json.Unmarshal([]byte(response.Response), tk)
 		token = string(tk.Token)
-		fmt.Printf("token '%v'\n",token)
+		fmt.Printf("token '%v'\n", token)
 	}
-	
+
 	rflags := make(map[string]interface{})
 	rflags["identity"] = *identity
 
 	rhdr := NATSReqHeader{
-		Mode: "POST",
-		Path: "/relation/register",
-		Flags: rflags,
+		Mode:          "POST",
+		Path:          "/relation/register",
+		Flags:         rflags,
 		Authorization: token,
 	}
-	rrec := &NATSRequest {
+	rrec := &NATSRequest{
 		Header: rhdr,
-		Body: rbody.Bytes(),
+		Body:   rbody.Bytes(),
 	}
-	
 
 	var RDID string
 	payload, err = json.Marshal(rrec)
 	msg, err = nc.Request(subj, payload, 2*time.Second)
 	if err == nil {
 		var response = &NATSResponse{}
-		err = json.Unmarshal(msg.Data,response)
+		err = json.Unmarshal(msg.Data, response)
 		if response.Header.Status != 200 {
-			fmt.Printf("RDID status %v error \"%s\"\n",response.Header.Status,response.Header.ErrorStr)
+			fmt.Printf("RDID status %v error \"%s\"\n", response.Header.Status, response.Header.ErrorStr)
 		} else {
-			fmt.Printf("RDID status %v RDID %v\n",response.Header.Status,response.Response)
+			fmt.Printf("RDID status %v RDID %v\n", response.Header.Status, response.Response)
 			RDID = response.Response
 		}
 	}
-	
+
 	dflags := make(map[string]interface{})
 	dflags["entityAccess"] = "public"
 	dflags["withHeader"] = true
@@ -202,16 +201,16 @@ func main() {
 	mode := args[1]
 	dhdr := NATSReqHeader{
 		Mode: mode,
-		Path: fmt.Sprintf("/%v/%v/%v/%v",dflags["domain"],
-			dflags["entity"],dflags["token"],dflags["aspect"]),
-		Flags: dflags,
+		Path: fmt.Sprintf("/%v/%v/%v/%v", dflags["domain"],
+			dflags["entity"], dflags["token"], dflags["aspect"]),
+		Flags:         dflags,
 		Authorization: token,
 	}
-	drec := &NATSRequest {
+	drec := &NATSRequest{
 		Header: dhdr,
-		Body: rbody.Bytes(),
+		Body:   rbody.Bytes(),
 	}
-	
+
 	start := time.Now()
 	payload, err = json.Marshal(drec)
 
@@ -223,7 +222,7 @@ func main() {
 		log.Fatalf("%v for request", err)
 	}
 	var response = &NATSResponse{}
-	err = json.Unmarshal(msg.Data,response)
+	err = json.Unmarshal(msg.Data, response)
 	//log.Printf("struct %v\n",response)
 	//log.Printf("Published [%s] : '%s'", subj, payload)
 	if response.Header.Status != 200 {
