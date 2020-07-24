@@ -1,4 +1,4 @@
-package natslib
+package pkg
 
 type NATSUpdateEHeader struct {
 	Mode       string `json:"mode"`
